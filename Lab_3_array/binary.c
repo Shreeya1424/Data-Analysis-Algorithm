@@ -2,23 +2,24 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define N 100000
+#define N 10000000
 
-void bubbleSort(int arr[], int n) {
-    int i, j, temp, swapped;
-    for (i = 0; i < n - 1; i++) {
-        swapped = 0;
-        for (j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-                swapped = 1;
-            }
-        }
-        if (swapped == 0)
-            break;
+int compare(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
+}
+
+int binarysearch(int arr[], int n, int target) {
+    int low = 0, high = n - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;  
+        if (arr[mid] == target)
+            return mid;
+        else if (arr[mid] < target)
+            low = mid + 1;
+        else
+            high = mid - 1;
     }
+    return -1;
 }
 
 void generateBestCase(int arr[], int n) {
@@ -42,11 +43,9 @@ void writeArrayToFile(int arr[], int n, const char *filename) {
         printf("Error opening file for writing.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fprintf(fp, "%d\n", arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -56,11 +55,9 @@ void readArrayFromFile(int arr[], int n, const char *filename) {
         printf("Error opening file for reading.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fscanf(fp, "%d", &arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -83,6 +80,7 @@ int main() {
     char filename[30];
     clock_t start, end;
     double cpu_time_used;
+    int target, result;
 
     printf("Choose Input Case:\n");
     printf("1. Best Case (Already Sorted)\n");
@@ -116,27 +114,36 @@ int main() {
             break;
     }
 
-    // Write and read from file
     writeArrayToFile(arr, N, filename);
     readArrayFromFile(arr, N, filename);
 
-    // Print sample
     printSampleArray(arr, N);
 
-    // Start sorting
+    printf("\nEnter target element to search: ");
+    scanf("%d", &target);
+
+    // Important: Sort the array if it's not already sorted
+    if (choice != 1) {  // Best case is already sorted
+        printf("\nSorting array before Binary Search...\n");
+        start = clock();
+        qsort(arr, N, sizeof(int), compare);
+        end = clock();
+        printf("Time taken for sorting: %.6f seconds\n", ((double)(end - start)) / CLOCKS_PER_SEC);
+    }
+
     start = clock();
-    bubbleSort(arr, N);
+    result = binarysearch(arr, N, target);
     end = clock();
 
-    // Timing in seconds
-    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC * 1000;
 
-    // Output
-    printf("\nSorted Array Sample:\n");
-    printSampleArray(arr, N);
-    printf("\nTime taken to sort %d elements: %.4f seconds\n", N, cpu_time_used);
+    if (result != -1)
+        printf("Element %d found at index %d\n", target, result);
+    else
+        printf("Element %d not found in the array.\n", target);
 
-    // Cleanup
+    printf("Time taken for binary search on %d elements: %.6f seconds\n", N, cpu_time_used);
+
     free(arr);
     return 0;
 }

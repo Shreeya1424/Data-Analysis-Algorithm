@@ -4,23 +4,38 @@
 
 #define N 100000
 
-void bubbleSort(int arr[], int n) {
-    int i, j, temp, swapped;
-    for (i = 0; i < n - 1; i++) {
-        swapped = 0;
-        for (j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-                swapped = 1;
-            }
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Quick Sort Functions
+int partition(int arr[], int low, int high) {
+    int pivot = arr[high]; // pivot = last element
+    int i = (low - 1);
+    
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(&arr[i], &arr[j]);
         }
-        if (swapped == 0)
-            break;
+    }
+
+    swap(&arr[i + 1], &arr[high]);
+    return (i + 1);
+}
+
+void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
     }
 }
 
+// Input case generators
 void generateBestCase(int arr[], int n) {
     for (int i = 0; i < n; i++)
         arr[i] = i;
@@ -36,17 +51,16 @@ void generateAverageCase(int arr[], int n) {
         arr[i] = rand() % 1000;
 }
 
+// File I/O
 void writeArrayToFile(int arr[], int n, const char *filename) {
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
         printf("Error opening file for writing.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fprintf(fp, "%d\n", arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -56,11 +70,9 @@ void readArrayFromFile(int arr[], int n, const char *filename) {
         printf("Error opening file for reading.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fscanf(fp, "%d", &arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -123,9 +135,9 @@ int main() {
     // Print sample
     printSampleArray(arr, N);
 
-    // Start sorting
+    // Start sorting using Quick Sort
     start = clock();
-    bubbleSort(arr, N);
+    quickSort(arr, 0, N - 1);
     end = clock();
 
     // Timing in seconds
@@ -134,7 +146,7 @@ int main() {
     // Output
     printf("\nSorted Array Sample:\n");
     printSampleArray(arr, N);
-    printf("\nTime taken to sort %d elements: %.4f seconds\n", N, cpu_time_used);
+    printf("\nTime taken to sort %d elements using Quick Sort: %.4f seconds\n", N, cpu_time_used);
 
     // Cleanup
     free(arr);

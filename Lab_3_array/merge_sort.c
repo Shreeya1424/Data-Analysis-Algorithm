@@ -2,25 +2,55 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define N 100000
+#define N 100
 
-void bubbleSort(int arr[], int n) {
-    int i, j, temp, swapped;
-    for (i = 0; i < n - 1; i++) {
-        swapped = 0;
-        for (j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-                swapped = 1;
-            }
+void merge(int arr[], int l, int m, int r) {
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    int *L = (int *)malloc(n1 * sizeof(int));
+    int *R = (int *)malloc(n2 * sizeof(int));
+
+    for (i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[m + 1 + j];
+
+    i = 0; j = 0; k = l;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k++] = L[i++];
+        } else {
+            arr[k++] = R[j++];
         }
-        if (swapped == 0)
-            break;
+    }
+
+    // Copy the remaining elements
+    while (i < n1) {
+        arr[k++] = L[i++];
+    }
+
+    while (j < n2) {
+        arr[k++] = R[j++];
+    }
+
+    free(L);
+    free(R);
+}
+
+void mergeSort(int arr[], int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+
+        merge(arr, l, m, r);
     }
 }
 
+// Input case generators
 void generateBestCase(int arr[], int n) {
     for (int i = 0; i < n; i++)
         arr[i] = i;
@@ -36,17 +66,16 @@ void generateAverageCase(int arr[], int n) {
         arr[i] = rand() % 1000;
 }
 
+// File I/O
 void writeArrayToFile(int arr[], int n, const char *filename) {
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
         printf("Error opening file for writing.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fprintf(fp, "%d\n", arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -56,11 +85,9 @@ void readArrayFromFile(int arr[], int n, const char *filename) {
         printf("Error opening file for reading.\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++) {
         fscanf(fp, "%d", &arr[i]);
     }
-
     fclose(fp);
 }
 
@@ -123,9 +150,9 @@ int main() {
     // Print sample
     printSampleArray(arr, N);
 
-    // Start sorting
+    // Start sorting using Merge Sort
     start = clock();
-    bubbleSort(arr, N);
+    mergeSort(arr, 0, N - 1);
     end = clock();
 
     // Timing in seconds
@@ -134,7 +161,7 @@ int main() {
     // Output
     printf("\nSorted Array Sample:\n");
     printSampleArray(arr, N);
-    printf("\nTime taken to sort %d elements: %.4f seconds\n", N, cpu_time_used);
+    printf("\nTime taken to sort %d elements using Merge Sort: %.4f seconds\n", N, cpu_time_used);
 
     // Cleanup
     free(arr);
